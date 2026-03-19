@@ -101,7 +101,7 @@ const verifyToken = (req, res, next) => {
 const generateTokens = (user) => ({
   accessToken: jwt.sign(
     { id: user._id, email: user.email, role: user.role, workspaceId: user.workspaceId },
-    process.env.JWT_SECRET, { expiresIn: "15m" }
+    process.env.JWT_SECRET, { expiresIn: "7d" }
   ),
   refreshToken: jwt.sign({ id: user._id }, process.env.JWT_REFRESH_SECRET, { expiresIn: "7d" })
 });
