@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { taskSocket } from "../utils/socket";
+import API from "../utils/api";
 import toast from "react-hot-toast";
 
 const COLUMNS = [
@@ -30,8 +31,6 @@ export default function Board() {
   const [focused, setFocused]       = useState("");
   const [activeCol, setActiveCol]   = useState("todo"); // mobile: selected column tab
 
-  const token   = localStorage.getItem("accessToken");
-  const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
 
   useEffect(() => {
     if (!workspaceId) { navigate("/"); return; }
@@ -45,8 +44,8 @@ export default function Board() {
 
   const fetchTasks = async () => {
     try {
-      const res  = await fetch(`https://nexusops-production.up.railway.app/api/tasks?workspaceId=${workspaceId}`, { headers });
-      const data = await res.json();
+      const res  = await API.get(`/tasks?workspaceId=${workspaceId}`);
+      const data = res.data;
       setTasks(Array.isArray(data) ? data : []);
     } catch { toast.error("Failed to load tasks"); }
   };
@@ -55,9 +54,9 @@ export default function Board() {
     if (!title || title.length < 3) return;
     setPredicting(true);
     try {
-      const res  = await fetch(`https://nexusops-production.up.railway.app/api/analytics/predict/${workspaceId}`, { method: "POST", headers, body: JSON.stringify({ title }) });
-      const data = await res.json();
-      if (data.predicted) { setForm(f => ({ ...f, priority: data.predicted })); toast.success(`🤖 ML predicted: ${data.predicted}`); }
+      const res  = await API.post(`/analytics/predict/${workspaceId}`, { title });
+      const data = res.data;
+      if (res.data.predicted) { setForm(f => ({ ...f, priority: res.data.predicted })); toast.success(`🤖 ML predicted: ${res.data.predicted}`); }
     } catch {}
     setPredicting(false);
   };
@@ -66,8 +65,8 @@ export default function Board() {
     if (!form.title.trim()) return;
     setCreating(true);
     try {
-      const res = await fetch(`https://nexusops-production.up.railway.app/api/tasks`, { method: "POST", headers, body: JSON.stringify({ ...form, workspaceId }) });
-      if (!res.ok) throw new Error();
+      const res = await API.post(`/tasks`, { ...form, workspaceId });
+      
       setShowCreate(false);
       setForm({ title: "", description: "", priority: "medium", dueDate: "" });
       toast.success("Task created!");
@@ -78,12 +77,12 @@ export default function Board() {
   const moveTask = async (taskId, newStatus) => {
     setTasks(prev => prev.map(t => t._id === taskId ? { ...t, status: newStatus } : t));
     try {
-      await fetch(`https://nexusops-production.up.railway.app/api/tasks/${taskId}`, { method: "PUT", headers, body: JSON.stringify({ status: newStatus }) });
+      await API.put(`/tasks/${taskId}`, { status: newStatus });
     } catch { toast.error("Failed to move task"); fetchTasks(); }
   };
 
   const deleteTask = async (taskId) => {
-    try { await fetch(`https://nexusops-production.up.railway.app/api/tasks/${taskId}`, { method: "DELETE", headers }); toast.success("Task deleted"); }
+    try { await API.delete(`/tasks/${taskId}`); toast.success("Task deleted"); }
     catch { toast.error("Failed to delete"); }
   };
 
