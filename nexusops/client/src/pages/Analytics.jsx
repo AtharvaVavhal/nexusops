@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import API from "../utils/api";
 
-// Inline SVGs — no lucide-react dependency
 const I = {
   ArrowLeft:     ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>,
   BarChart2:     ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
@@ -15,98 +14,60 @@ const I = {
   RefreshCw:     ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>,
   Plus:          ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
   Trash2:        ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>,
-  Play:          ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>,
-  Save:          ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>,
-  ToggleLeft:    ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="5" width="22" height="14" rx="7" ry="7"/><circle cx="8" cy="12" r="3"/></svg>,
-  ToggleRight:   ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="5" width="22" height="14" rx="7" ry="7"/><circle cx="16" cy="12" r="3"/></svg>,
-  ChevronDown:   ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>,
-  ChevronUp:     ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="18 15 12 9 6 15"/></svg>,
-  FileText:      ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>,
-  Eye:           ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>,
-  Pencil:        ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>,
-  Wifi:          ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>,
-  WifiOff:       ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a11 11 0 0 1 5.17-2.39"/><path d="M10.71 5.05A16 16 0 0 1 22.56 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>,
 };
-
 
 const WORKSPACE_ID = localStorage.getItem("workspaceId") || "69bb975accdf1384f3017e3f";
 
-// ── Inline SVG Charts ─────────────────────────────────────────────────────────
 function BurndownChart({ tasks }) {
   const W = 520, H = 200, PAD = { t: 16, r: 16, b: 32, l: 44 };
   const iW = W - PAD.l - PAD.r, iH = H - PAD.t - PAD.b;
   const total = tasks.length;
   if (!total) return <div style={{ height: H, display: "flex", alignItems: "center", justifyContent: "center", color: "#475569", fontSize: 12 }}>No task data yet</div>;
-
   const sorted = [...tasks].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
   const days = 14;
   const start = sorted[0] ? new Date(sorted[0].createdAt) : new Date();
   const ideal = Array.from({ length: days + 1 }, (_, i) => ({ day: i, val: Math.round(total - (total / days) * i) }));
-
   const doneTasks = tasks.filter(t => t.status === "done" && t.completedAt);
   const doneByDay = {};
-  doneTasks.forEach(t => {
-    const d = Math.floor((new Date(t.completedAt) - start) / 86400000);
-    doneByDay[Math.min(d, days)] = (doneByDay[Math.min(d, days)] || 0) + 1;
-  });
-
+  doneTasks.forEach(t => { const d = Math.floor((new Date(t.completedAt) - start) / 86400000); doneByDay[Math.min(d, days)] = (doneByDay[Math.min(d, days)] || 0) + 1; });
   let remaining = total;
   const actual = [];
-  for (let i = 0; i <= Math.min(days, 13); i++) {
-    remaining -= (doneByDay[i] || 0);
-    actual.push({ day: i, val: Math.max(0, remaining) });
-    if (remaining <= 0) break;
-  }
-
+  for (let i = 0; i <= Math.min(days, 13); i++) { remaining -= (doneByDay[i] || 0); actual.push({ day: i, val: Math.max(0, remaining) }); if (remaining <= 0) break; }
   const xS = d => PAD.l + (d / days) * iW;
   const yS = v => PAD.t + iH - (Math.max(0, v) / total) * iH;
-
   const idealPath = ideal.map((p, i) => `${i === 0 ? "M" : "L"}${xS(p.day)},${yS(p.val)}`).join(" ");
   const actualPath = actual.map((p, i) => `${i === 0 ? "M" : "L"}${xS(p.day)},${yS(p.val)}`).join(" ");
   const areaPath = actual.length > 1 ? `${actualPath} L${xS(actual[actual.length - 1].day)},${yS(0)} L${xS(0)},${yS(0)} Z` : "";
-
   return (
     <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto" }}>
       <defs>
-        <linearGradient id="aGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#6366f1" stopOpacity="0.25" />
-          <stop offset="100%" stopColor="#6366f1" stopOpacity="0.02" />
-        </linearGradient>
+        <linearGradient id="aGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#6366f1" stopOpacity="0.25" /><stop offset="100%" stopColor="#6366f1" stopOpacity="0.02" /></linearGradient>
         <filter id="glow2"><feGaussianBlur stdDeviation="2.5" result="b" /><feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
       </defs>
-      {[0, Math.round(total * 0.25), Math.round(total * 0.5), Math.round(total * 0.75), total].map(v => (
-        <g key={v}>
-          <line x1={PAD.l} y1={yS(v)} x2={W - PAD.r} y2={yS(v)} stroke="rgba(99,102,241,0.1)" strokeWidth="1" strokeDasharray="4 4" />
-          <text x={PAD.l - 6} y={yS(v) + 4} textAnchor="end" fontSize="9" fill="#475569">{v}</text>
-        </g>
-      ))}
-      {[0, 3, 7, 10, 14].map(d => (
-        <text key={d} x={xS(d)} y={H - 6} textAnchor="middle" fontSize="9" fill="#475569">D{d}</text>
-      ))}
+      {[0, Math.round(total * 0.25), Math.round(total * 0.5), Math.round(total * 0.75), total].map(v => (<g key={v}><line x1={PAD.l} y1={yS(v)} x2={W - PAD.r} y2={yS(v)} stroke="rgba(99,102,241,0.1)" strokeWidth="1" strokeDasharray="4 4" /><text x={PAD.l - 6} y={yS(v) + 4} textAnchor="end" fontSize="9" fill="#475569">{v}</text></g>))}
+      {[0, 3, 7, 10, 14].map(d => (<text key={d} x={xS(d)} y={H - 6} textAnchor="middle" fontSize="9" fill="#475569">D{d}</text>))}
       {areaPath && <path d={areaPath} fill="url(#aGrad)" />}
       <path d={idealPath} fill="none" stroke="#334155" strokeWidth="1.5" strokeDasharray="6 4" />
       {actualPath && <path d={actualPath} fill="none" stroke="#6366f1" strokeWidth="2.5" filter="url(#glow2)" strokeLinejoin="round" />}
       {actual.map((p, i) => <circle key={i} cx={xS(p.day)} cy={yS(p.val)} r="3" fill="#6366f1" stroke="#0d1626" strokeWidth="1.5" />)}
-      <line x1={W - 120} y1={14} x2={W - 100} y2={14} stroke="#334155" strokeWidth="1.5" strokeDasharray="5 3" />
-      <text x={W - 96} y={18} fontSize="8" fill="#475569">Ideal</text>
-      <line x1={W - 120} y1={28} x2={W - 100} y2={28} stroke="#6366f1" strokeWidth="2" />
-      <text x={W - 96} y={32} fontSize="8" fill="#818cf8">Actual</text>
+      <line x1={W - 120} y1={14} x2={W - 100} y2={14} stroke="#334155" strokeWidth="1.5" strokeDasharray="5 3" /><text x={W - 96} y={18} fontSize="8" fill="#475569">Ideal</text>
+      <line x1={W - 120} y1={28} x2={W - 100} y2={28} stroke="#6366f1" strokeWidth="2" /><text x={W - 96} y={32} fontSize="8" fill="#818cf8">Actual</text>
     </svg>
   );
 }
 
 function StatusBar({ statusCounts, total }) {
   const statuses = [
-    { key: "todo",       label: "To Do",       color: "#64748b" },
-    { key: "inprogress", label: "In Progress",  color: "#f59e0b" },
-    { key: "review",     label: "Review",       color: "#818cf8" },
-    { key: "done",       label: "Done",         color: "#10b981" },
+    { key: "todo",       label: "To Do",      color: "#64748b" },
+    { key: "inprogress", label: "In Progress", color: "#f59e0b" },
+    { key: "review",     label: "Review",      color: "#818cf8" },
+    { key: "done",       label: "Done",        color: "#10b981" },
   ];
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       {statuses.map(s => {
         const count = statusCounts[s.key] || 0;
-        const pct   = total ? Math.round((count / total) * 100) : 0;
+        const pct = total ? Math.round((count / total) * 100) : 0;
         return (
           <div key={s.key} style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ width: 80, fontSize: 11, color: "#64748b" }}>{s.label}</div>
@@ -122,48 +83,33 @@ function StatusBar({ statusCounts, total }) {
   );
 }
 
-// ── Main ──────────────────────────────────────────────────────────────────────
 export default function Analytics() {
   const { user } = useAuth();
   const navigate = useNavigate();
-
-  const [tasks, setTasks]       = useState([]);
-  const [analytics, setAnalytics] = useState(null);
-  const [loading, setLoading]   = useState(true);
+  const [tasks, setTasks]           = useState([]);
+  const [analytics, setAnalytics]   = useState(null);
+  const [loading, setLoading]       = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError]       = useState(null);
-
+  const [error, setError]           = useState(null);
   const workspaceId = localStorage.getItem("workspaceId") || WORKSPACE_ID;
 
   const load = useCallback(async (quiet = false) => {
-    if (!quiet) setLoading(true);
-    else setRefreshing(true);
+    if (!quiet) setLoading(true); else setRefreshing(true);
     setError(null);
     try {
-      // 1. fetch tasks
       const taskRes = await API.get(`https://amiable-optimism-production-b40a.up.railway.app/tasks/workspace/${workspaceId}`);
       const taskList = Array.isArray(taskRes.data) ? taskRes.data : [];
       setTasks(taskList);
-
-      // 2. fetch analytics (POST with tasks payload — matches real route)
-      const analyticsRes = await API.post(
-        `https://empathetic-generosity-production-36ff.up.railway.app/analytics/workspace/${workspaceId}`,
-        { tasks: taskList }
-      );
+      const analyticsRes = await API.post(`https://empathetic-generosity-production-36ff.up.railway.app/analytics/workspace/${workspaceId}`, { tasks: taskList });
       setAnalytics(analyticsRes.data);
-    } catch (err) {
-      setError(err.response?.data?.message || "Failed to load analytics");
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
+    } catch (err) { setError(err.response?.data?.message || "Failed to load analytics"); }
+    finally { setLoading(false); setRefreshing(false); }
   }, [workspaceId]);
 
   useEffect(() => { load(); }, [load]);
 
-  // ── Derived values ───────────────────────────────────────────────────────
-  const bd        = analytics?.burndown || {};
-  const anomalies = analytics?.anomalies || [];
+  const bd             = analytics?.burndown || {};
+  const anomalies      = analytics?.anomalies || [];
   const statusCounts   = analytics?.statusCounts || {};
   const priorityCounts = analytics?.priorityCounts || {};
   const memberStats    = analytics?.memberStats || {};
@@ -172,13 +118,13 @@ export default function Analytics() {
   const topMembers     = Object.values(memberStats).sort((a, b) => b.score - a.score).slice(0, 5);
 
   const kpis = [
-    { label: "Total Tasks",   value: total,                           color: "#6366f1", icon: <I.BarChart2 size={16} /> },
-    { label: "Completed",     value: statusCounts.done || 0,          color: "#10b981", icon: <I.CheckCircle size={16} /> },
-    { label: "Completion",    value: `${completionRate}%`,            color: "#10b981", icon: <I.TrendingUp size={16} /> },
-    { label: "In Progress",   value: statusCounts.inprogress || 0,    color: "#f59e0b", icon: <I.Clock size={16} /> },
-    { label: "Velocity/Day",  value: bd.velocityPerDay ?? "—",        color: "#818cf8", icon: <I.Zap size={16} /> },
-    { label: "Est. Days Left",value: bd.predictedCompletionDays ?? "—", color: bd.onTrack ? "#10b981" : "#ef4444", icon: <I.TrendingUp size={16} /> },
-    { label: "Anomalies",     value: anomalies.length,                color: anomalies.length ? "#ef4444" : "#10b981", icon: <I.AlertTriangle size={16} /> },
+    { label: "Total Tasks",    value: total,                              color: "#6366f1", icon: <I.BarChart2 size={16} /> },
+    { label: "Completed",      value: statusCounts.done || 0,             color: "#10b981", icon: <I.CheckCircle size={16} /> },
+    { label: "Completion",     value: `${completionRate}%`,               color: "#10b981", icon: <I.TrendingUp size={16} /> },
+    { label: "In Progress",    value: statusCounts.inprogress || 0,       color: "#f59e0b", icon: <I.Clock size={16} /> },
+    { label: "Velocity/Day",   value: bd.velocityPerDay ?? "—",           color: "#818cf8", icon: <I.Zap size={16} /> },
+    { label: "Est. Days Left", value: bd.predictedCompletionDays ?? "—",  color: bd.onTrack ? "#10b981" : "#ef4444", icon: <I.TrendingUp size={16} /> },
+    { label: "Anomalies",      value: anomalies.length,                   color: anomalies.length ? "#ef4444" : "#10b981", icon: <I.AlertTriangle size={16} /> },
   ];
 
   if (loading) return (
@@ -191,45 +137,41 @@ export default function Analytics() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+    <div className="min-h-screen bg-gray-950 text-white overflow-x-hidden" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap');`}</style>
 
-      {/* Header */}
-      <div className="border-b border-gray-800 px-6 py-4 flex items-center gap-4">
-        <button onClick={() => navigate("/")} className="text-gray-400 hover:text-white transition"><I.ArrowLeft size={20} /></button>
-        <div>
-          <h1 className="text-xl font-bold text-white flex items-center gap-2"><I.BarChart2 size={20} className="text-indigo-400" /> Analytics</h1>
+      {/* Header — mobile friendly */}
+      <div className="border-b border-gray-800 px-4 sm:px-6 py-4 flex items-center gap-3 flex-wrap">
+        <button onClick={() => navigate("/")} className="text-gray-400 hover:text-white transition flex-shrink-0"><I.ArrowLeft size={20} /></button>
+        <div className="min-w-0">
+          <h1 className="text-base sm:text-xl font-bold text-white flex items-center gap-2"><I.BarChart2 size={18} className="text-indigo-400 flex-shrink-0" /> Analytics</h1>
           <p className="text-gray-500 text-xs mt-0.5">ML-POWERED · NAIVE BAYES ENGINE</p>
         </div>
         <div className="flex-1" />
         <button onClick={() => load(true)} disabled={refreshing}
-          className="flex items-center gap-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg text-gray-400 text-xs transition">
+          className="flex items-center gap-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg text-gray-400 text-xs transition flex-shrink-0">
           <I.RefreshCw size={14} className={refreshing ? "animate-spin" : ""} /> Refresh
         </button>
       </div>
 
-      {error && (
-        <div className="mx-6 mt-4 px-4 py-3 bg-red-900/20 border border-red-800 rounded-lg text-red-400 text-sm">{error}</div>
-      )}
+      {error && <div className="mx-4 sm:mx-6 mt-4 px-4 py-3 bg-red-900/20 border border-red-800 rounded-lg text-red-400 text-sm">{error}</div>}
 
-      <div className="p-6 flex flex-col gap-6">
+      <div className="p-4 sm:p-6 flex flex-col gap-4 sm:gap-6">
 
-        {/* KPI cards */}
-        <div className="grid grid-cols-7 gap-3">
+        {/* KPI cards — 2 cols mobile, 4 tablet, 7 desktop */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
           {kpis.map((k, i) => (
-            <div key={i} className="bg-gray-900 border border-gray-800 rounded-xl p-4 hover:border-gray-700 transition">
-              <div className="flex items-center gap-2 mb-3" style={{ color: k.color }}>{k.icon}</div>
-              <div className="text-2xl font-bold mb-1" style={{ color: k.color }}>{k.value}</div>
+            <div key={i} className="bg-gray-900 border border-gray-800 rounded-xl p-3 sm:p-4 hover:border-gray-700 transition">
+              <div className="flex items-center gap-2 mb-2 sm:mb-3" style={{ color: k.color }}>{k.icon}</div>
+              <div className="text-xl sm:text-2xl font-bold mb-1" style={{ color: k.color }}>{k.value}</div>
               <div className="text-xs text-gray-500">{k.label}</div>
             </div>
           ))}
         </div>
 
-        {/* Main grid */}
-        <div className="grid grid-cols-3 gap-6">
-
-          {/* Burndown chart */}
-          <div className="col-span-2 bg-gray-900 border border-gray-800 rounded-xl p-5">
+        {/* Burndown + Anomalies — stack on mobile */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="lg:col-span-2 bg-gray-900 border border-gray-800 rounded-xl p-4 sm:p-5">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold text-white text-sm">Burndown Chart</h2>
               {bd.message && <span className="text-xs px-2 py-1 rounded-full" style={{ background: bd.onTrack ? "rgba(16,185,129,0.1)" : "rgba(245,158,11,0.1)", color: bd.onTrack ? "#10b981" : "#f59e0b" }}>{bd.onTrack ? "✓ On Track" : "⚠ Behind"}</span>}
@@ -238,8 +180,7 @@ export default function Analytics() {
             {bd.message && <p className="text-xs text-gray-500 mt-3">{bd.message}</p>}
           </div>
 
-          {/* Anomalies */}
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 sm:p-5">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold text-white text-sm flex items-center gap-2"><I.AlertTriangle size={15} className="text-red-400" /> ML Anomalies</h2>
               <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: anomalies.length ? "rgba(239,68,68,0.15)" : "rgba(16,185,129,0.1)", color: anomalies.length ? "#ef4444" : "#10b981" }}>{anomalies.length} found</span>
@@ -261,17 +202,15 @@ export default function Analytics() {
           </div>
         </div>
 
-        {/* Bottom row */}
-        <div className="grid grid-cols-3 gap-6">
+        {/* Bottom row — stack on mobile */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
 
-          {/* Status breakdown */}
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 sm:p-5">
             <h2 className="font-semibold text-white text-sm mb-4">Status Breakdown</h2>
             <StatusBar statusCounts={statusCounts} total={total} />
           </div>
 
-          {/* Priority distribution */}
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 sm:p-5">
             <h2 className="font-semibold text-white text-sm mb-4 flex items-center gap-2"><I.Zap size={14} className="text-purple-400" /> Priority (Naive Bayes)</h2>
             <div className="flex flex-col gap-3">
               {[
@@ -281,7 +220,7 @@ export default function Analytics() {
                 { key: "low",      label: "Low",      color: "#64748b" },
               ].map(p => {
                 const count = priorityCounts[p.key] || 0;
-                const pct   = total ? Math.round((count / total) * 100) : 0;
+                const pct = total ? Math.round((count / total) * 100) : 0;
                 return (
                   <div key={p.key} style={{ display: "flex", alignItems: "center", gap: 10 }}>
                     <div style={{ width: 56, fontSize: 11, color: "#64748b" }}>{p.label}</div>
@@ -295,8 +234,7 @@ export default function Analytics() {
             </div>
           </div>
 
-          {/* Member leaderboard */}
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 sm:p-5 sm:col-span-2 lg:col-span-1">
             <h2 className="font-semibold text-white text-sm mb-4">Team Productivity</h2>
             {topMembers.length === 0 ? (
               <div className="text-gray-600 text-xs text-center py-6">Assign tasks to see team stats</div>
@@ -304,12 +242,13 @@ export default function Analytics() {
               <div className="flex flex-col gap-3">
                 {topMembers.map((m, i) => (
                   <div key={i} className="flex items-center gap-3">
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: ["#6366f1","#10b981","#f59e0b","#ef4444","#818cf8"][i] + "33", color: ["#6366f1","#10b981","#f59e0b","#ef4444","#818cf8"][i], border: `1px solid ${["#6366f1","#10b981","#f59e0b","#ef4444","#818cf8"][i]}44` }}>{i + 1}</div>
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+                      style={{ background: ["#6366f1","#10b981","#f59e0b","#ef4444","#818cf8"][i] + "33", color: ["#6366f1","#10b981","#f59e0b","#ef4444","#818cf8"][i], border: `1px solid ${["#6366f1","#10b981","#f59e0b","#ef4444","#818cf8"][i]}44` }}>{i + 1}</div>
                     <div className="flex-1 min-w-0">
                       <div className="text-xs font-medium text-gray-300 truncate">{m.name}</div>
                       <div className="text-xs text-gray-600">{m.done}/{m.total} tasks</div>
                     </div>
-                    <div className="text-xs font-bold" style={{ color: m.score >= 80 ? "#10b981" : m.score >= 50 ? "#f59e0b" : "#ef4444" }}>{m.score}%</div>
+                    <div className="text-xs font-bold flex-shrink-0" style={{ color: m.score >= 80 ? "#10b981" : m.score >= 50 ? "#f59e0b" : "#ef4444" }}>{m.score}%</div>
                   </div>
                 ))}
               </div>
