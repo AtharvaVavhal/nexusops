@@ -97,7 +97,7 @@ export default function Analytics() {
     if (!quiet) setLoading(true); else setRefreshing(true);
     setError(null);
     try {
-      const taskRes = await API.get(`/api/tasks?workspaceId=${workspaceId}`);
+      const taskRes = await API.get(`/tasks?workspaceId=${workspaceId}`);
       const taskList = Array.isArray(taskRes.data) ? taskRes.data : [];
       setTasks(taskList);
       const analyticsRes = await API.get(`https://nexusops-production.up.railway.app/api/analytics/dashboard/${workspaceId}`);
