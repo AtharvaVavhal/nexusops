@@ -2,7 +2,32 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import API from "../utils/api";
-import { BarChart2, Zap, AlertTriangle, CheckCircle, Clock, TrendingUp, ArrowLeft, RefreshCw } from "lucide-react";
+
+// Inline SVGs — no lucide-react dependency
+const I = {
+  ArrowLeft:     ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>,
+  BarChart2:     ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
+  Zap:           ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>,
+  AlertTriangle: ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,
+  CheckCircle:   ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>,
+  Clock:         ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+  TrendingUp:    ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>,
+  RefreshCw:     ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>,
+  Plus:          ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+  Trash2:        ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>,
+  Play:          ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>,
+  Save:          ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>,
+  ToggleLeft:    ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="5" width="22" height="14" rx="7" ry="7"/><circle cx="8" cy="12" r="3"/></svg>,
+  ToggleRight:   ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="5" width="22" height="14" rx="7" ry="7"/><circle cx="16" cy="12" r="3"/></svg>,
+  ChevronDown:   ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>,
+  ChevronUp:     ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="18 15 12 9 6 15"/></svg>,
+  FileText:      ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>,
+  Eye:           ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>,
+  Pencil:        ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>,
+  Wifi:          ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>,
+  WifiOff:       ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a11 11 0 0 1 5.17-2.39"/><path d="M10.71 5.05A16 16 0 0 1 22.56 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>,
+};
+
 
 const WORKSPACE_ID = localStorage.getItem("workspaceId") || "69bb975accdf1384f3017e3f";
 
@@ -147,13 +172,13 @@ export default function Analytics() {
   const topMembers     = Object.values(memberStats).sort((a, b) => b.score - a.score).slice(0, 5);
 
   const kpis = [
-    { label: "Total Tasks",   value: total,                           color: "#6366f1", icon: <BarChart2 size={16} /> },
-    { label: "Completed",     value: statusCounts.done || 0,          color: "#10b981", icon: <CheckCircle size={16} /> },
-    { label: "Completion",    value: `${completionRate}%`,            color: "#10b981", icon: <TrendingUp size={16} /> },
-    { label: "In Progress",   value: statusCounts.inprogress || 0,    color: "#f59e0b", icon: <Clock size={16} /> },
-    { label: "Velocity/Day",  value: bd.velocityPerDay ?? "—",        color: "#818cf8", icon: <Zap size={16} /> },
-    { label: "Est. Days Left",value: bd.predictedCompletionDays ?? "—", color: bd.onTrack ? "#10b981" : "#ef4444", icon: <TrendingUp size={16} /> },
-    { label: "Anomalies",     value: anomalies.length,                color: anomalies.length ? "#ef4444" : "#10b981", icon: <AlertTriangle size={16} /> },
+    { label: "Total Tasks",   value: total,                           color: "#6366f1", icon: <I.BarChart2 size={16} /> },
+    { label: "Completed",     value: statusCounts.done || 0,          color: "#10b981", icon: <I.CheckCircle size={16} /> },
+    { label: "Completion",    value: `${completionRate}%`,            color: "#10b981", icon: <I.TrendingUp size={16} /> },
+    { label: "In Progress",   value: statusCounts.inprogress || 0,    color: "#f59e0b", icon: <I.Clock size={16} /> },
+    { label: "Velocity/Day",  value: bd.velocityPerDay ?? "—",        color: "#818cf8", icon: <I.Zap size={16} /> },
+    { label: "Est. Days Left",value: bd.predictedCompletionDays ?? "—", color: bd.onTrack ? "#10b981" : "#ef4444", icon: <I.TrendingUp size={16} /> },
+    { label: "Anomalies",     value: anomalies.length,                color: anomalies.length ? "#ef4444" : "#10b981", icon: <I.AlertTriangle size={16} /> },
   ];
 
   if (loading) return (
@@ -171,15 +196,15 @@ export default function Analytics() {
 
       {/* Header */}
       <div className="border-b border-gray-800 px-6 py-4 flex items-center gap-4">
-        <button onClick={() => navigate("/")} className="text-gray-400 hover:text-white transition"><ArrowLeft size={20} /></button>
+        <button onClick={() => navigate("/")} className="text-gray-400 hover:text-white transition"><I.ArrowLeft size={20} /></button>
         <div>
-          <h1 className="text-xl font-bold text-white flex items-center gap-2"><BarChart2 size={20} className="text-indigo-400" /> Analytics</h1>
+          <h1 className="text-xl font-bold text-white flex items-center gap-2"><I.BarChart2 size={20} className="text-indigo-400" /> Analytics</h1>
           <p className="text-gray-500 text-xs mt-0.5">ML-POWERED · NAIVE BAYES ENGINE</p>
         </div>
         <div className="flex-1" />
         <button onClick={() => load(true)} disabled={refreshing}
           className="flex items-center gap-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg text-gray-400 text-xs transition">
-          <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} /> Refresh
+          <I.RefreshCw size={14} className={refreshing ? "animate-spin" : ""} /> Refresh
         </button>
       </div>
 
@@ -216,13 +241,13 @@ export default function Analytics() {
           {/* Anomalies */}
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-semibold text-white text-sm flex items-center gap-2"><AlertTriangle size={15} className="text-red-400" /> ML Anomalies</h2>
+              <h2 className="font-semibold text-white text-sm flex items-center gap-2"><I.AlertTriangle size={15} className="text-red-400" /> ML Anomalies</h2>
               <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: anomalies.length ? "rgba(239,68,68,0.15)" : "rgba(16,185,129,0.1)", color: anomalies.length ? "#ef4444" : "#10b981" }}>{anomalies.length} found</span>
             </div>
             <div className="flex flex-col gap-3 overflow-y-auto" style={{ maxHeight: 260 }}>
               {anomalies.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-10 text-gray-600">
-                  <CheckCircle size={28} className="mb-2 text-green-700" />
+                  <I.CheckCircle size={28} className="mb-2 text-green-700" />
                   <p className="text-sm">All clear — no anomalies</p>
                 </div>
               ) : anomalies.map((a, i) => (
@@ -247,7 +272,7 @@ export default function Analytics() {
 
           {/* Priority distribution */}
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-            <h2 className="font-semibold text-white text-sm mb-4 flex items-center gap-2"><Zap size={14} className="text-purple-400" /> Priority (Naive Bayes)</h2>
+            <h2 className="font-semibold text-white text-sm mb-4 flex items-center gap-2"><I.Zap size={14} className="text-purple-400" /> Priority (Naive Bayes)</h2>
             <div className="flex flex-col gap-3">
               {[
                 { key: "critical", label: "Critical", color: "#ef4444" },

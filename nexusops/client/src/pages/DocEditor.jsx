@@ -4,7 +4,32 @@ import { useAuth } from "../context/AuthContext";
 import { docSocket } from "../utils/socket";
 import API from "../utils/api";
 import toast from "react-hot-toast";
-import { FileText, Plus, Trash2, ArrowLeft, Eye, Pencil, Users, Wifi, WifiOff, Save } from "lucide-react";
+
+// Inline SVGs — no lucide-react dependency
+const I = {
+  ArrowLeft:     ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>,
+  BarChart2:     ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
+  Zap:           ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>,
+  AlertTriangle: ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,
+  CheckCircle:   ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>,
+  Clock:         ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+  TrendingUp:    ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>,
+  RefreshCw:     ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>,
+  Plus:          ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+  Trash2:        ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>,
+  Play:          ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>,
+  Save:          ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>,
+  ToggleLeft:    ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="5" width="22" height="14" rx="7" ry="7"/><circle cx="8" cy="12" r="3"/></svg>,
+  ToggleRight:   ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="5" width="22" height="14" rx="7" ry="7"/><circle cx="16" cy="12" r="3"/></svg>,
+  ChevronDown:   ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>,
+  ChevronUp:     ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="18 15 12 9 6 15"/></svg>,
+  FileText:      ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>,
+  Eye:           ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>,
+  Pencil:        ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>,
+  Wifi:          ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>,
+  WifiOff:       ({size=16,className=""}) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a11 11 0 0 1 5.17-2.39"/><path d="M10.71 5.05A16 16 0 0 1 22.56 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>,
+};
+
 
 const TOOLBAR_ACTIONS = [
   { label: "H1", title: "Heading 1", wrap: (s) => `# ${s}` },
@@ -256,9 +281,9 @@ export default function DocEditor() {
 
       {/* Header */}
       <div className="border-b border-gray-800 px-4 py-3 flex items-center gap-4 flex-shrink-0">
-        <button onClick={() => navigate("/")} className="text-gray-400 hover:text-white transition"><ArrowLeft size={20} /></button>
+        <button onClick={() => navigate("/")} className="text-gray-400 hover:text-white transition"><I.ArrowLeft size={20} /></button>
         <div>
-          <h1 className="text-lg font-bold text-white flex items-center gap-2"><FileText size={18} className="text-indigo-400" /> DocEditor</h1>
+          <h1 className="text-lg font-bold text-white flex items-center gap-2"><I.FileText size={18} className="text-indigo-400" /> DocEditor</h1>
           <p className="text-gray-500 text-xs">OT ALGORITHM · {otOps} OPS</p>
         </div>
         <div className="flex-1" />
@@ -277,7 +302,7 @@ export default function DocEditor() {
 
         {/* Connection status */}
         <div className="flex items-center gap-1.5 text-xs" style={{ color: connected ? "#10b981" : "#f59e0b" }}>
-          {connected ? <Wifi size={14} /> : <WifiOff size={14} />}
+          {connected ? <I.Wifi size={14} /> : <I.WifiOff size={14} />}
           {connected ? "Live" : "Offline"}
         </div>
       </div>
@@ -289,7 +314,7 @@ export default function DocEditor() {
             <span className="text-xs text-gray-500 uppercase tracking-widest">Docs</span>
             <button onClick={createDoc} disabled={creatingDoc}
               className="p-1 rounded hover:bg-gray-800 text-gray-500 hover:text-indigo-400 transition">
-              <Plus size={14} />
+              <I.Plus size={14} />
             </button>
           </div>
           <div className="flex-1 overflow-y-auto">
@@ -307,7 +332,7 @@ export default function DocEditor() {
                 </div>
                 <button onClick={e => { e.stopPropagation(); deleteDoc(doc); }}
                   className="opacity-0 group-hover:opacity-100 p-0.5 text-gray-600 hover:text-red-400 transition flex-shrink-0">
-                  <Trash2 size={11} />
+                  <I.Trash2 size={11} />
                 </button>
               </div>
             ))}
@@ -318,7 +343,7 @@ export default function DocEditor() {
         <div className="flex-1 flex flex-col overflow-hidden">
           {!activeDoc ? (
             <div className="flex-1 flex flex-col items-center justify-center text-gray-700">
-              <FileText size={40} className="mb-3 text-gray-800" />
+              <I.FileText size={40} className="mb-3 text-gray-800" />
               <p className="text-sm mb-1">No document selected</p>
               <button onClick={createDoc} className="mt-3 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-white text-sm transition">
                 Create your first doc
@@ -341,12 +366,12 @@ export default function DocEditor() {
                 <div className="flex-1" />
                 {/* Save state */}
                 <div className="flex items-center gap-1.5 text-xs" style={{ color: saveState === "saved" ? "#10b981" : saveState === "saving" ? "#f59e0b" : "#64748b" }}>
-                  <Save size={12} />
+                  <I.Save size={12} />
                   {saveState === "saved" ? "Saved" : saveState === "saving" ? "Saving…" : "Unsaved"}
                 </div>
                 <button onClick={() => setPreview(!preview)}
                   className={`flex items-center gap-1.5 px-3 py-1 rounded-lg border text-xs ml-3 transition ${preview ? "bg-indigo-900/30 border-indigo-700 text-indigo-300" : "border-gray-700 text-gray-500 hover:text-gray-300"}`}>
-                  {preview ? <Pencil size={12} /> : <Eye size={12} />}
+                  {preview ? <I.Pencil size={12} /> : <I.Eye size={12} />}
                   {preview ? "Edit" : "Preview"}
                 </button>
               </div>
