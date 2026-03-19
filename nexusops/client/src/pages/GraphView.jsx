@@ -1,5 +1,8 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import * as d3 from "d3";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { ArrowLeft } from "lucide-react";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const WORKSPACE_ID = "69bb975accdf1384f3017e3f";
@@ -7,7 +10,7 @@ const TASK_API = "http://localhost:5002";
 
 const STATUS_META = {
   todo:        { color: "#64748b", glow: "#64748b", label: "To Do" },
-  "in-progress":{ color: "#f59e0b", glow: "#f59e0b", label: "In Progress" },
+  inprogress:  { color: "#f59e0b", glow: "#f59e0b", label: "In Progress" },
   review:      { color: "#818cf8", glow: "#818cf8", label: "Review" },
   done:        { color: "#10b981", glow: "#10b981", label: "Done" },
   blocked:     { color: "#ef4444", glow: "#ef4444", label: "Blocked" },
@@ -17,20 +20,20 @@ const PRIORITY_R = { critical: 22, high: 18, medium: 15, low: 12 };
 
 // ─── Mock fallback data ───────────────────────────────────────────────────────
 const MOCK_TASKS = [
-  { _id: "t1", title: "Auth Service",      status: "done",        priority: "critical", dependencies: [] },
-  { _id: "t2", title: "API Gateway",       status: "done",        priority: "high",     dependencies: ["t1"] },
-  { _id: "t3", title: "Task Service",      status: "done",        priority: "high",     dependencies: ["t1"] },
-  { _id: "t4", title: "Doc Service",       status: "in-progress", priority: "high",     dependencies: ["t1"] },
-  { _id: "t5", title: "Analytics Service", status: "in-progress", priority: "high",     dependencies: ["t3"] },
-  { _id: "t6", title: "Kanban Board UI",   status: "done",        priority: "medium",   dependencies: ["t2", "t3"] },
-  { _id: "t7", title: "GraphView UI",      status: "in-progress", priority: "medium",   dependencies: ["t2", "t3"] },
-  { _id: "t8", title: "Analytics UI",      status: "todo",        priority: "medium",   dependencies: ["t5"] },
-  { _id: "t9", title: "RuleBuilder UI",    status: "todo",        priority: "medium",   dependencies: ["t5"] },
-  { _id: "ta", title: "DocEditor UI",      status: "todo",        priority: "medium",   dependencies: ["t4"] },
-  { _id: "tb", title: "ML Priority Model", status: "done",        priority: "critical", dependencies: ["t3"] },
-  { _id: "tc", title: "OT Algorithm",      status: "done",        priority: "critical", dependencies: [] },
-  { _id: "td", title: "Burndown Engine",   status: "in-progress", priority: "high",     dependencies: ["t5"] },
-  { _id: "te", title: "Deploy & CI/CD",    status: "todo",        priority: "high",     dependencies: ["t6","t7","t8","t9","ta"] },
+  { _id: "t1", title: "Auth Service",      status: "done",       priority: "critical", dependencies: [] },
+  { _id: "t2", title: "API Gateway",       status: "done",       priority: "high",     dependencies: ["t1"] },
+  { _id: "t3", title: "Task Service",      status: "done",       priority: "high",     dependencies: ["t1"] },
+  { _id: "t4", title: "Doc Service",       status: "inprogress", priority: "high",     dependencies: ["t1"] },
+  { _id: "t5", title: "Analytics Service", status: "inprogress", priority: "high",     dependencies: ["t3"] },
+  { _id: "t6", title: "Kanban Board UI",   status: "done",       priority: "medium",   dependencies: ["t2", "t3"] },
+  { _id: "t7", title: "GraphView UI",      status: "inprogress", priority: "medium",   dependencies: ["t2", "t3"] },
+  { _id: "t8", title: "Analytics UI",      status: "todo",       priority: "medium",   dependencies: ["t5"] },
+  { _id: "t9", title: "RuleBuilder UI",    status: "todo",       priority: "medium",   dependencies: ["t5"] },
+  { _id: "ta", title: "DocEditor UI",      status: "todo",       priority: "medium",   dependencies: ["t4"] },
+  { _id: "tb", title: "ML Priority Model", status: "done",       priority: "critical", dependencies: ["t3"] },
+  { _id: "tc", title: "OT Algorithm",      status: "done",       priority: "critical", dependencies: [] },
+  { _id: "td", title: "Burndown Engine",   status: "inprogress", priority: "high",     dependencies: ["t5"] },
+  { _id: "te", title: "Deploy & CI/CD",    status: "todo",       priority: "high",     dependencies: ["t6","t7","t8","t9","ta"] },
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -60,6 +63,7 @@ export default function GraphView() {
   const svgRef = useRef(null);
   const containerRef = useRef(null);
   const simRef = useRef(null);
+  const navigate = useNavigate();
 
   const [tasks, setTasks]           = useState([]);
   const [loading, setLoading]       = useState(true);
@@ -71,8 +75,9 @@ export default function GraphView() {
 
   // ── Fetch tasks ─────────────────────────────────────────────────────────────
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    fetch(`${TASK_API}/tasks?workspaceId=${WORKSPACE_ID}`, {
+    const workspaceId = localStorage.getItem("workspaceId") || WORKSPACE_ID;
+    const token = localStorage.getItem("accessToken");
+    fetch(`${TASK_API}/tasks/workspace/${workspaceId}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(r => { if (!r.ok) throw new Error("API error"); return r.json(); })
@@ -278,6 +283,10 @@ export default function GraphView() {
 
       {/* ── Header ── */}
       <header style={{ padding: "18px 28px 0", display: "flex", alignItems: "center", gap: 16, borderBottom: "1px solid rgba(99,102,241,0.15)", paddingBottom: 16, flexShrink: 0 }}>
+        {/* Back button */}
+        <button onClick={() => navigate("/")} style={{ background: "none", border: "none", color: "#475569", cursor: "pointer", display: "flex", alignItems: "center", padding: 4 }}>
+          <ArrowLeft size={20} />
+        </button>
         {/* Logo mark */}
         <div style={{ width: 36, height: 36, borderRadius: 8, background: "linear-gradient(135deg,#6366f1,#818cf8)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 16, color: "#fff", flexShrink: 0 }}>N</div>
         <div>
@@ -395,7 +404,7 @@ export default function GraphView() {
               </div>
               {/* Status bar */}
               <div style={{ marginTop: 12, height: 2, background: "#1e293b", borderRadius: 2, overflow: "hidden" }}>
-                <div style={{ height: "100%", width: selected.status === "done" ? "100%" : selected.status === "in-progress" ? "55%" : selected.status === "review" ? "75%" : "0%", background: STATUS_META[selected.status]?.color, borderRadius: 2, transition: "width 0.4s ease" }} />
+                <div style={{ height: "100%", width: selected.status === "done" ? "100%" : selected.status === "inprogress" ? "55%" : selected.status === "review" ? "75%" : "0%", background: STATUS_META[selected.status]?.color, borderRadius: 2, transition: "width 0.4s ease" }} />
               </div>
             </div>
           )}
