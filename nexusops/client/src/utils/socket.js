@@ -1,7 +1,9 @@
 import { io } from "socket.io-client";
 
-export const taskSocket = io("https://amiable-optimism-production-b40a.up.railway.app", { autoConnect: false });
-export const docSocket  = io("https://superb-trust-production.up.railway.app",  { autoConnect: false });
+const SERVER = "https://nexusops-production.up.railway.app";
+
+export const taskSocket = io(SERVER, { autoConnect: false });
+export const docSocket  = io(SERVER, { autoConnect: false });
 
 export const connectSockets = (token) => {
   taskSocket.connect();
