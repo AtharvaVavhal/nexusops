@@ -31,7 +31,7 @@ const I = {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const WORKSPACE_ID = "69bb975accdf1384f3017e3f";
-const TASK_API = "https://amiable-optimism-production-b40a.up.railway.app";
+const TASK_API = "https://nexusops-production.up.railway.app/api";
 
 const STATUS_META = {
   todo:        { color: "#64748b", glow: "#64748b", label: "To Do" },
@@ -102,7 +102,7 @@ export default function GraphView() {
   useEffect(() => {
     const workspaceId = localStorage.getItem("workspaceId") || WORKSPACE_ID;
     const token = localStorage.getItem("accessToken");
-    fetch(`${TASK_API}/tasks/workspace/${workspaceId}`, {
+    fetch(`https://nexusops-production.up.railway.app/api/tasks?workspaceId=${workspaceId}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(r => { if (!r.ok) throw new Error("API error"); return r.json(); })

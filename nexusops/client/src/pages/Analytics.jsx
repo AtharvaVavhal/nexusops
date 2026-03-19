@@ -97,10 +97,10 @@ export default function Analytics() {
     if (!quiet) setLoading(true); else setRefreshing(true);
     setError(null);
     try {
-      const taskRes = await API.get(`https://amiable-optimism-production-b40a.up.railway.app/tasks/workspace/${workspaceId}`);
+      const taskRes = await API.get(`/api/tasks?workspaceId=${workspaceId}`);
       const taskList = Array.isArray(taskRes.data) ? taskRes.data : [];
       setTasks(taskList);
-      const analyticsRes = await API.post(`https://empathetic-generosity-production-36ff.up.railway.app/analytics/workspace/${workspaceId}`, { tasks: taskList });
+      const analyticsRes = await API.get(`https://nexusops-production.up.railway.app/api/analytics/dashboard/${workspaceId}`);
       setAnalytics(analyticsRes.data);
     } catch (err) { setError(err.response?.data?.message || "Failed to load analytics"); }
     finally { setLoading(false); setRefreshing(false); }
