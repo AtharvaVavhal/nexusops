@@ -111,15 +111,6 @@ Calculates velocity per day from completed tasks and projects estimated completi
 
 ---
 
-## 📸 Screenshots
-
-| Login | Dashboard |
-|---|---|
-| ![Login](screenshots/login.png) | ![Dashboard](screenshots/dashboard.png) |
-
-| Kanban Board | Dependency Graph |
-|---|---|
-| ![Kanban](screenshots/kanban.png) | ![Graph](screenshots/graph.png) |
 
 ---
 
