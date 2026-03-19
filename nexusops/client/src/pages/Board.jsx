@@ -17,8 +17,8 @@ const PRIORITY_META = {
   critical: { color: "#ef4444", bg: "rgba(239,68,68,0.15)",   label: "Crit" },
 };
 
-const BASE      = "http://localhost:5002";
-const ANALYTICS = "http://localhost:5004";
+const BASE      = "https://amiable-optimism-production-b40a.up.railway.app";
+const ANALYTICS = "https://empathetic-generosity-production-36ff.up.railway.app";
 
 export default function Board() {
   const navigate = useNavigate();

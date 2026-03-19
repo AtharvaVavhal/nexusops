@@ -28,7 +28,7 @@ export default function Dashboard() {
 
   const fetchWorkspaces = async () => {
     try {
-      const { data } = await API.get("http://localhost:5002/tasks/workspace");
+      const { data } = await API.get("https://amiable-optimism-production-b40a.up.railway.app/tasks/workspace");
       setWorkspaces(Array.isArray(data) ? data : []);
     } catch (err) { console.error(err); }
   };
@@ -37,7 +37,7 @@ export default function Dashboard() {
     if (!wsName.trim()) return;
     setCreating(true);
     try {
-      const { data } = await API.post("http://localhost:5002/tasks/workspace", { name: wsName });
+      const { data } = await API.post("https://amiable-optimism-production-b40a.up.railway.app/tasks/workspace", { name: wsName });
       setWorkspaces(prev => [...prev, data]);
       setShowCreate(false);
       setWsName("");

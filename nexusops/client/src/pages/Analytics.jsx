@@ -141,13 +141,13 @@ export default function Analytics() {
     setError(null);
     try {
       // 1. fetch tasks
-      const taskRes = await API.get(`http://localhost:5002/tasks/workspace/${workspaceId}`);
+      const taskRes = await API.get(`https://amiable-optimism-production-b40a.up.railway.app/tasks/workspace/${workspaceId}`);
       const taskList = Array.isArray(taskRes.data) ? taskRes.data : [];
       setTasks(taskList);
 
       // 2. fetch analytics (POST with tasks payload — matches real route)
       const analyticsRes = await API.post(
-        `http://localhost:5004/analytics/workspace/${workspaceId}`,
+        `https://empathetic-generosity-production-36ff.up.railway.app/analytics/workspace/${workspaceId}`,
         { tasks: taskList }
       );
       setAnalytics(analyticsRes.data);

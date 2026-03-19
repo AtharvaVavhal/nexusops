@@ -31,7 +31,7 @@ const I = {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const WORKSPACE_ID = "69bb975accdf1384f3017e3f";
-const TASK_API = "http://localhost:5002";
+const TASK_API = "https://amiable-optimism-production-b40a.up.railway.app";
 
 const STATUS_META = {
   todo:        { color: "#64748b", glow: "#64748b", label: "To Do" },

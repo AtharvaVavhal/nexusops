@@ -151,7 +151,7 @@ export default function DocEditor() {
 
   // ── Load doc list ─────────────────────────────────────────────────────────
   useEffect(() => {
-    API.get(`http://localhost:5003/docs/workspace/${workspaceId}`)
+    API.get(`https://superb-trust-production.up.railway.app/docs/workspace/${workspaceId}`)
       .then(res => {
         const list = Array.isArray(res.data) ? res.data : [];
         setDocs(list);
@@ -172,7 +172,7 @@ export default function DocEditor() {
     setActiveUsers([]);
 
     // Fetch full content
-    API.get(`http://localhost:5003/docs/${doc._id}`)
+    API.get(`https://superb-trust-production.up.railway.app/docs/${doc._id}`)
       .then(res => {
         setContent(res.data.content || "");
         setVersion(res.data.version || 0);
@@ -241,7 +241,7 @@ export default function DocEditor() {
   const createDoc = async () => {
     setCreatingDoc(true);
     try {
-      const { data } = await API.post("http://localhost:5003/docs", {
+      const { data } = await API.post("https://superb-trust-production.up.railway.app/docs", {
         title: "Untitled Document",
         workspaceId,
       });
@@ -254,7 +254,7 @@ export default function DocEditor() {
   // ── Delete doc ───────────────────────────────────────────────────────────
   const deleteDoc = async (doc) => {
     try {
-      await API.delete(`http://localhost:5003/docs/${doc._id}`);
+      await API.delete(`https://superb-trust-production.up.railway.app/docs/${doc._id}`);
       setDocs(prev => prev.filter(d => d._id !== doc._id));
       if (activeDoc?._id === doc._id) { setActiveDoc(null); setContent(""); setTitle(""); }
       toast.success("Document deleted");
