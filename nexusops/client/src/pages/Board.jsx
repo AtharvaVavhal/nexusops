@@ -17,20 +17,18 @@ const PRIORITY_META = {
   critical: { color: "#ef4444", bg: "rgba(239,68,68,0.15)",   label: "Crit" },
 };
 
-const BASE      = "https://amiable-optimism-production-b40a.up.railway.app";
-const ANALYTICS = "https://empathetic-generosity-production-36ff.up.railway.app";
-
 export default function Board() {
   const navigate = useNavigate();
   const workspaceId = localStorage.getItem("workspaceId");
-  const [tasks, setTasks]         = useState([]);
+  const [tasks, setTasks]           = useState([]);
   const [showCreate, setShowCreate] = useState(false);
-  const [dragging, setDragging]   = useState(null);
-  const [dragOver, setDragOver]   = useState(null);
-  const [form, setForm]           = useState({ title: "", description: "", priority: "medium", dueDate: "" });
+  const [dragging, setDragging]     = useState(null);
+  const [dragOver, setDragOver]     = useState(null);
+  const [form, setForm]             = useState({ title: "", description: "", priority: "medium", dueDate: "" });
   const [predicting, setPredicting] = useState(false);
-  const [creating, setCreating]   = useState(false);
-  const [focused, setFocused]     = useState("");
+  const [creating, setCreating]     = useState(false);
+  const [focused, setFocused]       = useState("");
+  const [activeCol, setActiveCol]   = useState("todo"); // mobile: selected column tab
 
   const token   = localStorage.getItem("accessToken");
   const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
@@ -42,16 +40,12 @@ export default function Board() {
     taskSocket.on("task:created", task => setTasks(prev => [...prev, task]));
     taskSocket.on("task:updated", task => setTasks(prev => prev.map(t => t._id === task._id ? task : t)));
     taskSocket.on("task:deleted", ({ id }) => setTasks(prev => prev.filter(t => t._id !== id)));
-    return () => {
-      taskSocket.off("task:created");
-      taskSocket.off("task:updated");
-      taskSocket.off("task:deleted");
-    };
+    return () => { taskSocket.off("task:created"); taskSocket.off("task:updated"); taskSocket.off("task:deleted"); };
   }, [workspaceId]);
 
   const fetchTasks = async () => {
     try {
-      const res  = await fetch(`${BASE}/tasks/workspace/${workspaceId}`, { headers });
+      const res  = await fetch(`/api/tasks?workspaceId=${workspaceId}`, { headers });
       const data = await res.json();
       setTasks(Array.isArray(data) ? data : []);
     } catch { toast.error("Failed to load tasks"); }
@@ -61,10 +55,9 @@ export default function Board() {
     if (!title || title.length < 3) return;
     setPredicting(true);
     try {
-      const res  = await fetch(`${ANALYTICS}/analytics/predict-priority`, { method: "POST", headers, body: JSON.stringify({ title }) });
+      const res  = await fetch(`/api/analytics/predict/${workspaceId}`, { method: "POST", headers, body: JSON.stringify({ title }) });
       const data = await res.json();
-      setForm(f => ({ ...f, priority: data.priority }));
-      toast.success(`🤖 ML predicted: ${data.priority}`);
+      if (data.predicted) { setForm(f => ({ ...f, priority: data.predicted })); toast.success(`🤖 ML predicted: ${data.predicted}`); }
     } catch {}
     setPredicting(false);
   };
@@ -73,7 +66,7 @@ export default function Board() {
     if (!form.title.trim()) return;
     setCreating(true);
     try {
-      const res = await fetch(`${BASE}/tasks`, { method: "POST", headers, body: JSON.stringify({ ...form, workspaceId }) });
+      const res = await fetch(`/api/tasks`, { method: "POST", headers, body: JSON.stringify({ ...form, workspaceId }) });
       if (!res.ok) throw new Error();
       setShowCreate(false);
       setForm({ title: "", description: "", priority: "medium", dueDate: "" });
@@ -85,16 +78,13 @@ export default function Board() {
   const moveTask = async (taskId, newStatus) => {
     setTasks(prev => prev.map(t => t._id === taskId ? { ...t, status: newStatus } : t));
     try {
-      const res = await fetch(`${BASE}/tasks/${taskId}`, { method: "PUT", headers, body: JSON.stringify({ status: newStatus }) });
-      if (!res.ok) throw new Error();
+      await fetch(`/api/tasks/${taskId}`, { method: "PUT", headers, body: JSON.stringify({ status: newStatus }) });
     } catch { toast.error("Failed to move task"); fetchTasks(); }
   };
 
   const deleteTask = async (taskId) => {
-    try {
-      await fetch(`${BASE}/tasks/${taskId}`, { method: "DELETE", headers });
-      toast.success("Task deleted");
-    } catch { toast.error("Failed to delete"); }
+    try { await fetch(`/api/tasks/${taskId}`, { method: "DELETE", headers }); toast.success("Task deleted"); }
+    catch { toast.error("Failed to delete"); }
   };
 
   const handleDragStart = (e, task) => { setDragging(task); e.dataTransfer.effectAllowed = "move"; };
@@ -127,167 +117,149 @@ export default function Board() {
         @keyframes spin{to{transform:rotate(360deg)}}
         @keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
         .slide-down{animation:slideDown 0.2s ease}
+        .kanban-board { display: grid; grid-template-columns: repeat(4,minmax(240px,1fr)); gap: 16px; }
+        @media(max-width:768px){ .kanban-board { display: flex; flex-direction: column; } .col-desktop { display: none; } }
+        @media(min-width:769px){ .col-tabs { display: none; } }
       `}</style>
 
       {/* Header */}
-      <header style={{ padding: "16px 24px", borderBottom: "1px solid rgba(99,102,241,0.12)", display: "flex", alignItems: "center", gap: 16, flexShrink: 0, background: "#080e1a" }}>
-        <button onClick={() => navigate("/")} style={{ background: "none", border: "none", color: "#475569", cursor: "pointer", display: "flex", alignItems: "center", padding: 4 }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+      <header style={{ padding: "12px 16px", borderBottom: "1px solid rgba(99,102,241,0.12)", display: "flex", alignItems: "center", gap: 12, flexShrink: 0, background: "#080e1a", flexWrap: "wrap" }}>
+        <button onClick={() => navigate("/")} style={{ background: "none", border: "none", color: "#475569", cursor: "pointer", padding: 4, display: "flex", alignItems: "center" }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
         </button>
-        <div>
-          <h1 style={{ margin: 0, fontFamily: "'Syne',sans-serif", fontWeight: 800, fontSize: 18, color: "#f1f5f9", letterSpacing: "-0.02em" }}>
+        <div className="min-w-0">
+          <h1 style={{ margin: 0, fontFamily: "'Syne',sans-serif", fontWeight: 800, fontSize: 16, color: "#f1f5f9" }}>
             NexusOps <span style={{ color: "#6366f1" }}>/ Kanban</span>
           </h1>
-          <p style={{ margin: 0, fontSize: 10, color: "#475569", letterSpacing: "0.08em" }}>
-            REAL-TIME · SOCKET.IO · {tasks.length} TASKS
-          </p>
+          <p style={{ margin: 0, fontSize: 9, color: "#475569" }}>{tasks.length} TASKS · REAL-TIME</p>
         </div>
         <div style={{ flex: 1 }} />
-
-        {/* Progress bar */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.2)", borderRadius: 8, padding: "6px 14px" }}>
-          <div style={{ width: 80, height: 4, background: "#1e293b", borderRadius: 4, overflow: "hidden" }}>
-            <div style={{ width: `${progress}%`, height: "100%", background: "linear-gradient(90deg,#10b981,#34d399)", borderRadius: 4, transition: "width 0.5s ease" }} />
+        {/* Progress */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.2)", borderRadius: 8, padding: "5px 10px" }}>
+          <div style={{ width: 50, height: 4, background: "#1e293b", borderRadius: 4, overflow: "hidden" }}>
+            <div style={{ width: `${progress}%`, height: "100%", background: "linear-gradient(90deg,#10b981,#34d399)", borderRadius: 4, transition: "width 0.5s" }} />
           </div>
-          <span style={{ fontSize: 11, color: "#10b981", fontWeight: 600 }}>{progress}% DONE</span>
+          <span style={{ fontSize: 10, color: "#10b981", fontWeight: 600 }}>{progress}%</span>
         </div>
-
-        {/* Live indicator */}
-        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 10, color: "#10b981" }}>
-          <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#10b981", animation: "pulse 2s infinite" }} />
-          LIVE
-        </div>
-
         <button onClick={() => setShowCreate(true)}
-          style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 18px", background: "linear-gradient(135deg,#6366f1,#818cf8)", border: "none", borderRadius: 8, color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "'JetBrains Mono',monospace" }}>
+          style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", background: "linear-gradient(135deg,#6366f1,#818cf8)", border: "none", borderRadius: 8, color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "'JetBrains Mono',monospace", whiteSpace: "nowrap" }}>
           + New Task
         </button>
       </header>
 
       {/* Create Task Panel */}
       {showCreate && (
-        <div className="slide-down" style={{ margin: "16px 24px", background: "#0d1626", border: "1px solid rgba(99,102,241,0.25)", borderRadius: 14, padding: 20 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <div className="slide-down" style={{ margin: "12px 16px", background: "#0d1626", border: "1px solid rgba(99,102,241,0.25)", borderRadius: 14, padding: "16px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
             <span style={{ fontSize: 13, fontWeight: 600, color: "#f1f5f9" }}>Create New Task</span>
-            {predicting && (
-              <span style={{ fontSize: 11, color: "#6366f1", display: "flex", alignItems: "center", gap: 6 }}>
-                <div style={{ width: 10, height: 10, border: "2px solid rgba(99,102,241,0.3)", borderTop: "2px solid #6366f1", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} />
-                🤖 ML predicting…
-              </span>
-            )}
+            {predicting && <span style={{ fontSize: 11, color: "#6366f1" }}>🤖 ML predicting…</span>}
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-            <input style={{ ...inputS("title"), gridColumn: "1 / -1" }} placeholder="Task title (ML will predict priority on blur)"
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <input style={inputS("title")} placeholder="Task title (ML will predict priority)"
               value={form.title} onFocus={() => setFocused("title")} onBlur={e => { setFocused(""); predictPriority(e.target.value); }}
               onChange={e => setForm({ ...form, title: e.target.value })} autoFocus />
-            <input style={{ ...inputS("desc"), gridColumn: "1 / -1" }} placeholder="Description (optional)"
+            <input style={inputS("desc")} placeholder="Description (optional)"
               value={form.description} onFocus={() => setFocused("desc")} onBlur={() => setFocused("")}
               onChange={e => setForm({ ...form, description: e.target.value })} />
-            <div>
-              <label style={{ fontSize: 10, color: "#475569", letterSpacing: "0.1em", display: "block", marginBottom: 6 }}>PRIORITY</label>
-              <select style={{ ...inputS("priority"), cursor: "pointer" }} value={form.priority}
-                onFocus={() => setFocused("priority")} onBlur={() => setFocused("")}
-                onChange={e => setForm({ ...form, priority: e.target.value })}>
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-                <option value="critical">Critical</option>
-              </select>
-            </div>
-            <div>
-              <label style={{ fontSize: 10, color: "#475569", letterSpacing: "0.1em", display: "block", marginBottom: 6 }}>DUE DATE</label>
-              <input type="date" style={{ ...inputS("date"), colorScheme: "dark" }} value={form.dueDate}
-                onFocus={() => setFocused("date")} onBlur={() => setFocused("")}
-                onChange={e => setForm({ ...form, dueDate: e.target.value })} />
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+              <div>
+                <label style={{ fontSize: 10, color: "#475569", letterSpacing: "0.1em", display: "block", marginBottom: 6 }}>PRIORITY</label>
+                <select style={{ ...inputS("priority"), cursor: "pointer" }} value={form.priority}
+                  onChange={e => setForm({ ...form, priority: e.target.value })}>
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="critical">Critical</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ fontSize: 10, color: "#475569", letterSpacing: "0.1em", display: "block", marginBottom: 6 }}>DUE DATE</label>
+                <input type="date" style={{ ...inputS("date"), colorScheme: "dark" }} value={form.dueDate}
+                  onChange={e => setForm({ ...form, dueDate: e.target.value })} />
+              </div>
             </div>
           </div>
-
-          {/* Priority preview */}
-          <div style={{ display: "flex", gap: 6, marginTop: 12 }}>
-            {Object.entries(PRIORITY_META).map(([key, meta]) => (
-              <button key={key} onClick={() => setForm({ ...form, priority: key })}
-                style={{ padding: "4px 12px", borderRadius: 20, border: `1px solid ${form.priority === key ? meta.color : "transparent"}`, background: form.priority === key ? meta.bg : "transparent", color: form.priority === key ? meta.color : "#334155", fontSize: 10, fontWeight: 600, cursor: "pointer", fontFamily: "'JetBrains Mono',monospace", transition: "all 0.15s" }}>
-                {meta.label}
-              </button>
-            ))}
-          </div>
-
-          <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
+          <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
             <button onClick={createTask} disabled={creating || !form.title.trim()}
-              style={{ padding: "9px 24px", background: creating ? "rgba(99,102,241,0.4)" : "linear-gradient(135deg,#6366f1,#818cf8)", border: "none", borderRadius: 8, color: "#fff", fontSize: 12, fontWeight: 600, cursor: creating ? "wait" : "pointer", fontFamily: "'JetBrains Mono',monospace", display: "flex", alignItems: "center", gap: 8, opacity: !form.title.trim() ? 0.5 : 1 }}>
-              {creating ? <><div style={{ width: 12, height: 12, border: "2px solid rgba(255,255,255,0.3)", borderTop: "2px solid #fff", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} /> Creating…</> : "→ Create Task"}
+              style={{ padding: "9px 20px", background: "linear-gradient(135deg,#6366f1,#818cf8)", border: "none", borderRadius: 8, color: "#fff", fontSize: 12, fontWeight: 600, cursor: creating ? "wait" : "pointer", fontFamily: "'JetBrains Mono',monospace", opacity: !form.title.trim() ? 0.5 : 1 }}>
+              {creating ? "Creating…" : "→ Create Task"}
             </button>
             <button onClick={() => { setShowCreate(false); setForm({ title: "", description: "", priority: "medium", dueDate: "" }); }}
-              style={{ padding: "9px 18px", background: "rgba(99,102,241,0.08)", border: "1px solid rgba(99,102,241,0.15)", borderRadius: 8, color: "#64748b", fontSize: 12, cursor: "pointer", fontFamily: "'JetBrains Mono',monospace" }}>
+              style={{ padding: "9px 16px", background: "rgba(99,102,241,0.08)", border: "1px solid rgba(99,102,241,0.15)", borderRadius: 8, color: "#64748b", fontSize: 12, cursor: "pointer", fontFamily: "'JetBrains Mono',monospace" }}>
               Cancel
             </button>
           </div>
         </div>
       )}
 
-      {/* Kanban columns */}
-      <div style={{ flex: 1, display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, padding: "16px 24px 24px", overflow: "hidden" }}>
-        {COLUMNS.map(col => {
-          const colTaskList = colTasks(col.id);
-          const isOver = dragOver === col.id;
+      {/* Mobile column tabs */}
+      <div className="col-tabs" style={{ display: "flex", overflowX: "auto", borderBottom: "1px solid rgba(99,102,241,0.1)", background: "#080e1a", padding: "0 16px" }}>
+        {COLUMNS.map(col => (
+          <button key={col.id} onClick={() => setActiveCol(col.id)}
+            style={{ padding: "10px 16px", border: "none", background: "none", cursor: "pointer", whiteSpace: "nowrap", fontSize: 11, fontWeight: 600, fontFamily: "'JetBrains Mono',monospace", color: activeCol === col.id ? col.color : "#475569", borderBottom: `2px solid ${activeCol === col.id ? col.color : "transparent"}`, transition: "all 0.15s" }}>
+            {col.emoji} {col.label} <span style={{ fontSize: 10, opacity: 0.7 }}>({colTasks(col.id).length})</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Kanban Board — desktop: 4 col grid, mobile: single col tab */}
+      <div style={{ flex: 1, padding: "16px", overflow: "auto" }}>
+        {/* Desktop */}
+        <div className="kanban-board col-desktop" style={{ minHeight: "calc(100vh - 160px)" }}>
+          {COLUMNS.map(col => <KanbanColumn key={col.id} col={col} tasks={colTasks(col.id)} dragging={dragging} dragOver={dragOver} onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDrop={handleDrop} onDragOver={(colId) => setDragOver(colId)} onDragLeave={() => setDragOver(null)} onDelete={deleteTask} onMove={moveTask} />)}
+        </div>
+        {/* Mobile: show only active column */}
+        <div className="col-tabs">
+          {COLUMNS.filter(col => col.id === activeCol).map(col => (
+            <KanbanColumn key={col.id} col={col} tasks={colTasks(col.id)} dragging={dragging} dragOver={dragOver} onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDrop={handleDrop} onDragOver={(colId) => setDragOver(colId)} onDragLeave={() => setDragOver(null)} onDelete={deleteTask} onMove={moveTask} isMobile={true} allColumns={COLUMNS} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function KanbanColumn({ col, tasks, dragging, dragOver, onDragStart, onDragEnd, onDrop, onDragOver, onDragLeave, onDelete, onMove, isMobile, allColumns }) {
+  const isOver = dragOver === col.id;
+  return (
+    <div onDragOver={e => { e.preventDefault(); onDragOver(col.id); }} onDragLeave={onDragLeave} onDrop={e => onDrop(e, col.id)}
+      style={{ display: "flex", flexDirection: "column", background: isOver ? col.bg : "#0a1220", border: `1px solid ${isOver ? col.color : "rgba(99,102,241,0.1)"}`, borderRadius: 14, overflow: "hidden", transition: "all 0.15s", borderTop: `3px solid ${col.color}`, minHeight: isMobile ? "60vh" : "auto" }}>
+      <div style={{ padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid rgba(99,102,241,0.08)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span>{col.emoji}</span>
+          <span style={{ fontSize: 11, fontWeight: 600, color: col.color }}>{col.label.toUpperCase()}</span>
+        </div>
+        <div style={{ minWidth: 22, height: 22, borderRadius: 11, background: `${col.color}22`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, color: col.color }}>{tasks.length}</div>
+      </div>
+      <div style={{ flex: 1, overflowY: "auto", padding: "10px", display: "flex", flexDirection: "column", gap: 8 }}>
+        {tasks.length === 0 && (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", color: "#1e293b", fontSize: 11, textAlign: "center", padding: 20, border: "2px dashed rgba(99,102,241,0.06)", borderRadius: 10, minHeight: 80 }}>Drop tasks here</div>
+        )}
+        {tasks.map(task => {
+          const pm = PRIORITY_META[task.priority] || PRIORITY_META.medium;
+          const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && task.status !== "done";
           return (
-            <div key={col.id}
-              onDragOver={e => { e.preventDefault(); setDragOver(col.id); }}
-              onDragLeave={() => setDragOver(null)}
-              onDrop={e => handleDrop(e, col.id)}
-              style={{ display: "flex", flexDirection: "column", background: isOver ? col.bg : "#0a1220", border: `1px solid ${isOver ? col.color : "rgba(99,102,241,0.1)"}`, borderRadius: 14, overflow: "hidden", transition: "all 0.15s", borderTop: `3px solid ${col.color}` }}>
-
-              {/* Column header */}
-              <div style={{ padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid rgba(99,102,241,0.08)" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ fontSize: 14 }}>{col.emoji}</span>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: col.color }}>{col.label.toUpperCase()}</span>
-                </div>
-                <div style={{ minWidth: 22, height: 22, borderRadius: 11, background: `${col.color}22`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, color: col.color }}>
-                  {colTaskList.length}
-                </div>
+            <div key={task._id} className="task-card" draggable onDragStart={e => onDragStart(e, task)} onDragEnd={onDragEnd}
+              style={{ background: "#0d1626", border: "1px solid rgba(99,102,241,0.12)", borderRadius: 10, padding: "12px 14px", opacity: dragging?._id === task._id ? 0.5 : 1 }}>
+              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginBottom: 6 }}>
+                <p style={{ fontSize: 12, fontWeight: 600, color: "#f1f5f9", lineHeight: 1.4, flex: 1, margin: 0 }}>{task.title}</p>
+                <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 8px", borderRadius: 10, background: pm.bg, color: pm.color, flexShrink: 0 }}>{pm.label.toUpperCase()}</span>
               </div>
-
-              {/* Tasks */}
-              <div style={{ flex: 1, overflowY: "auto", padding: "10px 10px", display: "flex", flexDirection: "column", gap: 8 }}>
-                {colTaskList.length === 0 && (
-                  <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "#1e293b", fontSize: 11, textAlign: "center", padding: 20, border: "2px dashed rgba(99,102,241,0.06)", borderRadius: 10, minHeight: 80 }}>
-                    Drop tasks here
-                  </div>
-                )}
-                {colTaskList.map(task => {
-                  const pm = PRIORITY_META[task.priority] || PRIORITY_META.medium;
-                  const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && task.status !== "done";
-                  return (
-                    <div key={task._id} className="task-card"
-                      draggable onDragStart={e => handleDragStart(e, task)} onDragEnd={handleDragEnd}
-                      style={{ background: "#0d1626", border: "1px solid rgba(99,102,241,0.12)", borderRadius: 10, padding: "12px 14px", opacity: dragging?._id === task._id ? 0.5 : 1 }}>
-
-                      {/* Priority + title */}
-                      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginBottom: 6 }}>
-                        <p style={{ fontSize: 12, fontWeight: 600, color: "#f1f5f9", lineHeight: 1.4, flex: 1, margin: 0 }}>{task.title}</p>
-                        <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 8px", borderRadius: 10, background: pm.bg, color: pm.color, flexShrink: 0, letterSpacing: "0.05em" }}>{pm.label.toUpperCase()}</span>
-                      </div>
-
-                      {/* Description */}
-                      {task.description && (
-                        <p style={{ fontSize: 11, color: "#475569", margin: "0 0 8px", lineHeight: 1.5 }}>{task.description}</p>
-                      )}
-
-                      {/* Footer */}
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 8 }}>
-                        {task.dueDate ? (
-                          <span style={{ fontSize: 10, color: isOverdue ? "#ef4444" : "#475569" }}>
-                            {isOverdue ? "⚠ " : "📅 "}{new Date(task.dueDate).toLocaleDateString()}
-                          </span>
-                        ) : <span />}
-                        <button onClick={() => deleteTask(task._id)}
-                          style={{ background: "none", border: "none", color: "#334155", cursor: "pointer", fontSize: 12, padding: "2px 4px", borderRadius: 4, lineHeight: 1 }}
-                          title="Delete task">✕</button>
-                      </div>
-                    </div>
-                  );
-                })}
+              {task.description && <p style={{ fontSize: 11, color: "#475569", margin: "0 0 8px", lineHeight: 1.5 }}>{task.description}</p>}
+              {/* Mobile move buttons */}
+              {isMobile && (
+                <div style={{ display: "flex", gap: 4, marginBottom: 8, flexWrap: "wrap" }}>
+                  {allColumns.filter(c => c.id !== col.id).map(c => (
+                    <button key={c.id} onClick={() => onMove(task._id, c.id)}
+                      style={{ padding: "3px 8px", borderRadius: 6, border: `1px solid ${c.color}44`, background: `${c.color}11`, color: c.color, fontSize: 9, fontWeight: 600, cursor: "pointer", fontFamily: "'JetBrains Mono',monospace" }}>
+                      → {c.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 4 }}>
+                {task.dueDate ? <span style={{ fontSize: 10, color: isOverdue ? "#ef4444" : "#475569" }}>{isOverdue ? "⚠ " : "📅 "}{new Date(task.dueDate).toLocaleDateString()}</span> : <span />}
+                <button onClick={() => onDelete(task._id)} style={{ background: "none", border: "none", color: "#334155", cursor: "pointer", fontSize: 12, padding: "2px 4px" }}>✕</button>
               </div>
             </div>
           );

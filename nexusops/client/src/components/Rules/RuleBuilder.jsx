@@ -256,7 +256,7 @@ export default function RuleBuilder() {
   const [savingId, setSavingId] = useState(null);
 
   useEffect(() => {
-    API.get(`https://empathetic-generosity-production-36ff.up.railway.app/rules/${workspaceId}`)
+    API.get(`http://localhost:5004/rules/${workspaceId}`)
       .then(res => setRules((res.data || []).map(r => ({
         ...r,
         conditions: (r.conditions || []).map(c => ({ ...c, id: uid() }))
@@ -277,13 +277,13 @@ export default function RuleBuilder() {
     };
     try {
       if (rule._id) {
-        const { data } = await API.put(`https://empathetic-generosity-production-36ff.up.railway.app/rules/${rule._id}`, payload);
+        const { data } = await API.put(`http://localhost:5004/rules/${rule._id}`, payload);
         setRules(prev => prev.map(r => r._id === rule._id
           ? { ...data, conditions: data.conditions.map(c => ({ ...c, id: uid() })), _isNew: false }
           : r));
         toast.success("Rule updated!");
       } else {
-        const { data } = await API.post("https://empathetic-generosity-production-36ff.up.railway.app/rules", payload);
+        const { data } = await API.post("http://localhost:5004/rules", payload);
         setRules(prev => prev.map(r => r === rule
           ? { ...data, conditions: data.conditions.map(c => ({ ...c, id: uid() })), _isNew: false }
           : r));
@@ -298,7 +298,7 @@ export default function RuleBuilder() {
   const deleteRule = async (rule) => {
     if (rule._isNew) { setRules(prev => prev.filter(r => r !== rule)); return; }
     try {
-      await API.delete(`https://empathetic-generosity-production-36ff.up.railway.app/rules/${rule._id}`);
+      await API.delete(`http://localhost:5004/rules/${rule._id}`);
       setRules(prev => prev.filter(r => r._id !== rule._id));
       toast.success("Rule deleted");
     } catch { toast.error("Failed to delete"); }
@@ -306,7 +306,7 @@ export default function RuleBuilder() {
 
   const testRule = async (rule) => {
     try {
-      const { data } = await API.post("https://empathetic-generosity-production-36ff.up.railway.app/rules/evaluate", {
+      const { data } = await API.post("http://localhost:5004/rules/evaluate", {
         task: { title: "Test task", priority: "high", status: "inprogress" },
         workspaceId,
       });
@@ -334,10 +334,10 @@ export default function RuleBuilder() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+    <div className="min-h-screen bg-gray-950 text-white overflow-x-hidden" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap'); select,input{outline:none;}`}</style>
 
-      <div className="border-b border-gray-800 px-6 py-4 flex items-center gap-4">
+      <div className="border-b border-gray-800 px-4 sm:px-6 py-4 flex items-center gap-3 flex-wrap">
         <button onClick={() => navigate("/")} className="text-gray-400 hover:text-white transition"><I.ArrowLeft size={20} /></button>
         <div>
           <h1 className="text-xl font-bold text-white flex items-center gap-2"><I.Zap size={20} className="text-indigo-400" /> Rule Builder</h1>

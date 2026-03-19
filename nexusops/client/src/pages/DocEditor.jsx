@@ -276,7 +276,7 @@ export default function DocEditor() {
   const wordCount = content.trim().split(/\s+/).filter(Boolean).length;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white flex flex-col" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+    <div className="min-h-screen bg-gray-950 text-white flex flex-col overflow-x-hidden" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@700;800&display=swap'); textarea{resize:none;} textarea:focus{outline:none;} .doc-item{transition:background 0.15s;}`}</style>
 
       {/* Header */}
