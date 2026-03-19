@@ -97,8 +97,8 @@ export default function Login() {
         </div>
 
         <div style={{ marginTop: 48, display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 16px", borderRadius: 20, background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.2)", width: "fit-content" }}>
-          <span style={{ fontSize: 12 }}>🏆</span>
-          <span style={{ fontSize: 11, color: "#f59e0b", fontWeight: 600 }}>Built in 48hrs for Hackathon</span>
+          <span style={{ fontSize: 12 }}>🚀</span>
+          <span style={{ fontSize: 11, color: "#f59e0b", fontWeight: 600 }}>Open Source · Try it free</span>
         </div>
       </div>
 
